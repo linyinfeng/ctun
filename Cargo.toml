@@ -1,0 +1,14 @@
+[package]
+name = "ctun"
+version = "0.1.0"
+edition = "2021"
+authors = [ "Lin Yinfeng <lin.yinfeng@outlook.com>" ]
+description = """
+Copy TUN
+"""
+
+[dependencies]
+tun = { version = "*", features = ["async"] }
+tokio = {version = "*", features = [ "macros", "rt-multi-thread", "io-util" ] }
+clap = { version = "*", features = [ "cargo", "derive" ] }
+anyhow = "*"
