@@ -12,9 +12,9 @@ async fn main() -> anyhow::Result<()> {
     let options = Options::parse();
     let mut config = tun::Configuration::default();
     config.up();
-    config.name(options.first);
+    config.tun_name(options.first);
     let dev1 = tun::create_as_async(&config)?;
-    config.name(options.second);
+    config.tun_name(options.second);
     let dev2 = tun::create_as_async(&config)?;
     let (mut read1, mut write1) = tokio::io::split(dev1);
     let (mut read2, mut write2) = tokio::io::split(dev2);
