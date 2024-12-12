@@ -823,9 +823,9 @@ dependencies = [
 
 [[package]]
 name = "wintun-bindings"
-version = "0.7.20"
+version = "0.7.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60fd13b6a4b74da60d900adee51da24efdc03f77297dd7a723fafbfb1ffec844"
+checksum = "23ebbc8d32caeea55e048b68f0ef6e74998ea401ec44b35907deb6e19771fdfb"
 dependencies = [
  "blocking",
  "c2rust-bitfields",
