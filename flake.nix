@@ -66,7 +66,12 @@
           inherit (self'.packages) ctun;
           doc = craneLib.cargoDoc commonArgs;
           fmt = craneLib.cargoFmt {inherit src;};
-          nextest = craneLib.cargoNextest commonArgs;
+          nextest = craneLib.cargoNextest (
+            commonArgs
+            // {
+              cargoNextestExtraArgs = lib.escapeShellArgs ["--no-tests=warn"];
+            }
+          );
           clippy = craneLib.cargoClippy (commonArgs
             // {
               cargoClippyExtraArgs = "--all-targets -- --deny warnings";
