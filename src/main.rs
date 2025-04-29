@@ -1,4 +1,4 @@
-use clap::{command, Parser};
+use clap::{Parser, command};
 
 #[derive(Clone, Debug, Parser)]
 #[command(author, version, about, long_about = None)]
