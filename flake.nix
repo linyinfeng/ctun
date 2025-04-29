@@ -19,79 +19,88 @@
     flake-compat.flake = false;
   };
 
-  outputs = inputs @ {flake-parts, ...}:
-    flake-parts.lib.mkFlake {inherit inputs;}
-    ({
-      self,
-      inputs,
-      lib,
-      ...
-    }: {
-      systems = [
-        "x86_64-linux"
-        "aarch64-linux"
-      ];
-      imports = [
-        inputs.flake-parts.flakeModules.easyOverlay
-        inputs.treefmt-nix.flakeModule
-      ];
-      perSystem = {
-        config,
-        self',
-        pkgs,
-        system,
+  outputs =
+    inputs@{ flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } (
+      {
+        self,
+        inputs,
+        lib,
         ...
-      }: let
-        craneLib = inputs.crane.mkLib pkgs;
-        src = craneLib.cleanCargoSource ./.;
-        bareCommonArgs = {
-          inherit src;
-          nativeBuildInputs = with pkgs; [
-            pkg-config
-          ];
-          buildInputs = with pkgs; [
-            openssl
-            sqlite
-          ];
-        };
-        cargoArtifacts = craneLib.buildDepsOnly bareCommonArgs;
-        commonArgs = bareCommonArgs // {inherit cargoArtifacts;};
-      in {
-        packages = {
-          ctun = craneLib.buildPackage commonArgs;
-          default = config.packages.ctun;
-        };
-        overlayAttrs.ctun = config.packages.ctun;
-        checks = {
-          inherit (self'.packages) ctun;
-          doc = craneLib.cargoDoc commonArgs;
-          fmt = craneLib.cargoFmt {inherit src;};
-          nextest = craneLib.cargoNextest (
-            commonArgs
-            // {
-              cargoNextestExtraArgs = lib.escapeShellArgs ["--no-tests=warn"];
-            }
-          );
-          clippy = craneLib.cargoClippy (commonArgs
-            // {
-              cargoClippyExtraArgs = "--all-targets -- --deny warnings";
-            });
-        };
-        treefmt = {
-          projectRootFile = "flake.nix";
-          programs = {
-            alejandra.enable = true;
-            rustfmt.enable = true;
-            shfmt.enable = true;
+      }:
+      {
+        systems = [
+          "x86_64-linux"
+          "aarch64-linux"
+        ];
+        imports = [
+          inputs.flake-parts.flakeModules.easyOverlay
+          inputs.treefmt-nix.flakeModule
+        ];
+        perSystem =
+          {
+            config,
+            self',
+            pkgs,
+            system,
+            ...
+          }:
+          let
+            craneLib = inputs.crane.mkLib pkgs;
+            src = craneLib.cleanCargoSource ./.;
+            bareCommonArgs = {
+              inherit src;
+              nativeBuildInputs = with pkgs; [
+                pkg-config
+              ];
+              buildInputs = with pkgs; [
+                openssl
+                sqlite
+              ];
+            };
+            cargoArtifacts = craneLib.buildDepsOnly bareCommonArgs;
+            commonArgs = bareCommonArgs // {
+              inherit cargoArtifacts;
+            };
+          in
+          {
+            packages = {
+              ctun = craneLib.buildPackage commonArgs;
+              default = config.packages.ctun;
+            };
+            overlayAttrs.ctun = config.packages.ctun;
+            checks = {
+              inherit (self'.packages) ctun;
+              doc = craneLib.cargoDoc commonArgs;
+              fmt = craneLib.cargoFmt { inherit src; };
+              nextest = craneLib.cargoNextest (
+                commonArgs
+                // {
+                  cargoNextestExtraArgs = lib.escapeShellArgs [ "--no-tests=warn" ];
+                }
+              );
+              clippy = craneLib.cargoClippy (
+                commonArgs
+                // {
+                  cargoClippyExtraArgs = "--all-targets -- --deny warnings";
+                }
+              );
+            };
+            treefmt = {
+              projectRootFile = "flake.nix";
+              programs = {
+                nixfmt.enable = true;
+                shfmt.enable = true;
+              };
+            };
+            devShells.default = pkgs.mkShell {
+              inputsFrom = lib.attrValues self'.checks;
+              packages = with pkgs; [
+                rustup
+                rust-analyzer
+              ];
+            };
           };
-        };
-        devShells.default = pkgs.mkShell {
-          inputsFrom = lib.attrValues self'.checks;
-          packages = with pkgs; [
-            rustup
-            rust-analyzer
-          ];
-        };
-      };
-    });
+      }
+    );
 }
